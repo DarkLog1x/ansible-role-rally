@@ -1,4 +1,9 @@
 ---
+
+- name: Check if Rally is installed - check if we have rally/bin, pass installation if it exists
+  stat: path=/home/rally/rally/bin/
+  register: rally_bin
+
 - name: Install dependencies
   yum: name={{item}} state=installed
   with_items:
@@ -12,25 +17,31 @@
   - "gcc"
   - "libxml2-devel"
   - "libxslt-devel"
+  when: not rally_bin.stat.exists
 
 - name: Create group for Rally
   group: name=rally state=present system=yes
+  when: not rally_bin.stat.exists
 
 - name: Create user for Rally
   user: name=rally groups=rally shell=/bin/bash state=present system=yes createhome=yes home=/home/rally
+  when: not rally_bin.stat.exists
 
 - name: Create Rally directories
   file: path={{ item.path }} state=directory owner=rally group=rally mode=0750
   with_items:
     - path: "/etc/rally"
     - path: "/home/rally"
+  when: not rally_bin.stat.exists
 
 - name: Get Rally installation script
   get_url: url=https://raw.githubusercontent.com/openstack/rally/master/install_rally.sh mode=0776 owner=rally group=rally dest=/tmp
+  when: not rally_bin.stat.exists
 
 - name: Install rally
   become_user: rally
   command: /tmp/install_rally.sh
+  when: not rally_bin.stat.exists
 
 - name: Clean up
   yum: name={{item}} state=absent
@@ -40,3 +51,4 @@
   - "libxml2-devel"
   - "libxslt-devel"
   - "gcc"
+  when: not rally_bin.stat.exists
