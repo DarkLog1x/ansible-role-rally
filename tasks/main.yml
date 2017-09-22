@@ -1,7 +1,7 @@
 ---
 
 - name: Check if Rally is installed - check if we have rally/bin, pass installation if it exists
-  stat: path=/home/rally/rally/bin/
+  stat: path=/home/rally/rally/bin/rally
   register: rally_bin
 
 - name: Install dependencies
